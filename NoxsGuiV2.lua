@@ -34,7 +34,7 @@ MainCorner.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.Text = "Nox's GUI"
+Title.Text = "Nox's GUI v2"
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
