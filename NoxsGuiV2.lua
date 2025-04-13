@@ -8,7 +8,6 @@ ToggleButton.Parent = ScreenGui
 ToggleButton.Name = "ToggleButton"
 ToggleButton.Text = "Toggle GUI"
 ToggleButton.Size = UDim2.new(0, 150, 0, 50)
-ToggleButton.Position = UDim2.new(0, 50, 0, 50)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Font = Enum.Font.GothamBold
@@ -34,12 +33,33 @@ MainCorner.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.Text = "Nox's GUI v2"
+Title.Text = "Nox's GUI v2😈"
 Title.Size = UDim2.new(1, 0, 0, 50)
 Title.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
+
+local function repositionButtonWithinScreen(button)
+    local screenSize = workspace.CurrentCamera.ViewportSize
+    local buttonSize = button.AbsoluteSize
+    local buttonPosition = button.AbsolutePosition
+
+    if buttonPosition.X < 0 then
+        button.Position = UDim2.new(0, 10, button.Position.Y.Scale, button.Position.Y.Offset)
+    elseif buttonPosition.X + buttonSize.X > screenSize.X then
+        button.Position = UDim2.new(0, screenSize.X - buttonSize.X - 10, button.Position.Y.Scale, button.Position.Y.Offset)
+    end
+
+    if buttonPosition.Y < 0 then
+        button.Position = UDim2.new(button.Position.X.Scale, button.Position.X.Offset, 0, 10)
+    elseif buttonPosition.Y + buttonSize.Y > screenSize.Y then
+        button.Position = UDim2.new(button.Position.X.Scale, button.Position.X.Offset, 0, screenSize.Y - buttonSize.Y - 10)
+    end
+end
+
+ToggleButton.Position = UDim2.new(0, 50, 0, 50)
+repositionButtonWithinScreen(ToggleButton)
 
 local function AddFunctionButton(parent, label, position, callback)
     local Button = Instance.new("TextButton")
@@ -136,51 +156,4 @@ AddInputField(MainFrame, "Set WalkSpeed", UDim2.new(0.05, 0, 0.1, 0), function(v
     local character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:WaitForChild("Humanoid")
     humanoid.WalkSpeed = value
-end)
-
-AddFunctionButton(MainFrame, "(r6) Scp-096 script", UDim2.new(0.05, 0, 0.2, 0), function()
-    loadstring(game:HttpGet("https://pastefy.app/M25RnnGm/raw"))()
-end)
-
-AddFunctionButton(MainFrame, "Infinite Yield", UDim2.new(0.05, 0, 0.3, 0), function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-end)
-
-AddFunctionButton(MainFrame, "Play my game (No Backdoor)", UDim2.new(0.05, 0, 0.4, 0), function()
-    game:GetService("TeleportService"):Teleport(7514707526, game.Players.LocalPlayer)
-end)
-
-AddFunctionButton(MainFrame, "Backdoor Scanner (Risky)", UDim2.new(0.05, 0, 0.5, 0), function()
-    loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/jLn0n/beckdeer-skenner/main/src/main.lua"))()
-end)
-
-AddFunctionButton(MainFrame, "Self Destruct", UDim2.new(0.05, 0, 0.9, 0), function()
-    ScreenGui:Destroy()
-end)
-
-local isAnimating = false
-
-local function AnimateGUI(frame, isVisible)
-    if isAnimating then return end
-    isAnimating = true
-
-    if isVisible then
-        frame.Visible = true
-        for i = 1, 10 do
-            frame.BackgroundTransparency = 1 - (i * 0.1)
-            wait(0.02)
-        end
-    else
-        for i = 1, 10 do
-            frame.BackgroundTransparency = i * 0.1
-            wait(0.02)
-        end
-        frame.Visible = false
-    end
-
-    isAnimating = false
-end
-
-ToggleButton.MouseButton1Click:Connect(function()
-    AnimateGUI(MainFrame, not MainFrame.Visible)
 end)
