@@ -58,8 +58,8 @@ createButton("Grab Knife(client)", function()
 end, UDim2.new(0, 10, 0, 110))
 
 createButton("Inf Yield", function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/projecter94/ECP/refs/heads/main/Everage%20Control%20Panel"))()
+    
+loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))())
     end)
 end, UDim2.new(0, 10, 0, 160))
 
