@@ -3,6 +3,7 @@ ScreenGui.Name = "NoxsGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- Toggle Button
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Parent = ScreenGui
 ToggleButton.Name = "ToggleButton"
@@ -18,6 +19,7 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 15)
 ToggleCorner.Parent = ToggleButton
 
+-- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
 MainFrame.Name = "MainFrame"
@@ -40,80 +42,75 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
 
-local Glow = Instance.new("ImageLabel")
-Glow.Name = "GlowEffect"
-Glow.Parent = MainFrame
-Glow.Size = UDim2.new(1.5, 0, 1.5, 0)
-Glow.Position = UDim2.new(-0.25, 0, -0.25, 0)
-Glow.BackgroundTransparency = 1
-Glow.Image = "rbxassetid://4996891970"
-Glow.ImageColor3 = Color3.fromRGB(138, 43, 226)
-Glow.ImageTransparency = 0.5
+-- Walkspeed Slider
+local WalkspeedLabel = Instance.new("TextLabel")
+WalkspeedLabel.Parent = MainFrame
+WalkspeedLabel.Text = "Walkspeed: 16"
+WalkspeedLabel.Size = UDim2.new(0.4, 0, 0, 40)
+WalkspeedLabel.Position = UDim2.new(0.05, 0, 0.1, 0)
+WalkspeedLabel.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
+WalkspeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+WalkspeedLabel.Font = Enum.Font.GothamBold
+WalkspeedLabel.TextSize = 14
 
-local function AddFunctionButton(parent, label, position, callback)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0.9, 0, 0, 40)
-    Button.Position = position
-    Button.Text = label
-    Button.Font = Enum.Font.Gotham
-    Button.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 14
-    Button.Parent = parent
+local WalkspeedSlider = Instance.new("TextButton")
+WalkspeedSlider.Parent = MainFrame
+WalkspeedSlider.Text = "Adjust Walkspeed"
+WalkspeedSlider.Size = UDim2.new(0.4, 0, 0, 40)
+WalkspeedSlider.Position = UDim2.new(0.05, 0, 0.2, 0)
+WalkspeedSlider.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+WalkspeedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+WalkspeedSlider.Font = Enum.Font.GothamBold
+WalkspeedSlider.TextSize = 14
 
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 10)
-    ButtonCorner.Parent = Button
+WalkspeedSlider.MouseButton1Click:Connect(function()
+    local walkspeed = math.random(16, 1000) -- Replace this with actual slider logic
+    WalkspeedLabel.Text = "Walkspeed: " .. walkspeed
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
+end)
 
-    Button.MouseButton1Click:Connect(callback)
-end
+-- Auto Jump Toggle
+local AutoJumpLabel = Instance.new("TextLabel")
+AutoJumpLabel.Parent = MainFrame
+AutoJumpLabel.Text = "Auto Jump: Off"
+AutoJumpLabel.Size = UDim2.new(0.4, 0, 0, 40)
+AutoJumpLabel.Position = UDim2.new(0.5, 0, 0.1, 0)
+AutoJumpLabel.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
+AutoJumpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoJumpLabel.Font = Enum.Font.GothamBold
+AutoJumpLabel.TextSize = 14
 
-local function AnimateGUI(frame, isVisible)
-    if isVisible then
-        frame.Visible = true
-        for i = 1, 10 do
-            frame.BackgroundTransparency = 1 - (i * 0.1)
-            wait(0.02)
-        end
+local AutoJumpToggle = Instance.new("TextButton")
+AutoJumpToggle.Parent = MainFrame
+AutoJumpToggle.Text = "Toggle Auto Jump"
+AutoJumpToggle.Size = UDim2.new(0.4, 0, 0, 40)
+AutoJumpToggle.Position = UDim2.new(0.5, 0, 0.2, 0)
+AutoJumpToggle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+AutoJumpToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoJumpToggle.Font = Enum.Font.GothamBold
+AutoJumpToggle.TextSize = 14
+
+local autoJumpEnabled = false
+local autoJumpConnection
+
+AutoJumpToggle.MouseButton1Click:Connect(function()
+    autoJumpEnabled = not autoJumpEnabled
+    AutoJumpLabel.Text = "Auto Jump: " .. (autoJumpEnabled and "On" or "Off")
+    if autoJumpEnabled then
+        autoJumpConnection = game:GetService("RunService").Stepped:Connect(function()
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
     else
-        for i = 1, 10 do
-            frame.BackgroundTransparency = i * 0.1
-            wait(0.02)
+        if autoJumpConnection then
+            autoJumpConnection:Disconnect()
+            autoJumpConnection = nil
         end
-        frame.Visible = false
     end
-end
+end)
 
+-- Toggle GUI Visibility
 ToggleButton.MouseButton1Click:Connect(function()
-    AnimateGUI(MainFrame, not MainFrame.Visible)
-end)
-
-local DebugPanel = Instance.new("ScrollingFrame")
-DebugPanel.Parent = MainFrame
-DebugPanel.Name = "DebugPanel"
-DebugPanel.Size = UDim2.new(0.9, 0, 0.6, 0)
-DebugPanel.Position = UDim2.new(0.05, 0, 0.3, 0)
-DebugPanel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-DebugPanel.BackgroundTransparency = 0.5
-DebugPanel.BorderSizePixel = 0
-DebugPanel.CanvasSize = UDim2.new(0, 0, 5, 0)
-DebugPanel.ScrollBarThickness = 5
-
-local function LogMessage(message)
-    local DebugText = Instance.new("TextLabel")
-    DebugText.Parent = DebugPanel
-    DebugText.Size = UDim2.new(1, 0, 0, 20)
-    DebugText.BackgroundTransparency = 1
-    DebugText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    DebugText.Font = Enum.Font.Gotham
-    DebugText.TextSize = 14
-    DebugText.Text = message
-end
-
-AddFunctionButton(MainFrame, "Example Button 1", UDim2.new(0.05, 0, 0.1, 0), function()
-    LogMessage("Button 1 clicked")
-end)
-
-AddFunctionButton(MainFrame, "Example Button 2", UDim2.new(0.05, 0, 0.2, 0), function()
-    LogMessage("Button 2 clicked")
+    MainFrame.Visible = not MainFrame.Visible
 end)
