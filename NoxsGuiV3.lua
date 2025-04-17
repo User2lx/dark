@@ -31,7 +31,6 @@ local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 20)
 MainCorner.Parent = MainFrame
 
-
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Text = "Nox's GUI V3 😈"
@@ -41,33 +40,15 @@ Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
 
-
 local Glow = Instance.new("ImageLabel")
 Glow.Name = "GlowEffect"
 Glow.Parent = MainFrame
 Glow.Size = UDim2.new(1.5, 0, 1.5, 0)
 Glow.Position = UDim2.new(-0.25, 0, -0.25, 0)
 Glow.BackgroundTransparency = 1
-Glow.Image = "rbxassetid://4996891970" -- Glow texture
+Glow.Image = "rbxassetid://4996891970"
 Glow.ImageColor3 = Color3.fromRGB(138, 43, 226)
-Glow.ImageTransparency = 0.5 -- Adjust transparency for the glow effect
-
--- Function to Animate Glow (Optional)
-local function AnimateGlow()
-    while true do
-        for i = 0.5, 1, 0.05 do
-            Glow.ImageTransparency = i
-            wait(0.05)
-        end
-        for i = 1, 0.5, -0.05 do
-            Glow.ImageTransparency = i
-            wait(0.05)
-        end
-    end
-end
-
--- Start Glow Animation
-coroutine.wrap(AnimateGlow)()
+Glow.ImageTransparency = 0.5
 
 local function AddFunctionButton(parent, label, position, callback)
     local Button = Instance.new("TextButton")
@@ -107,11 +88,32 @@ ToggleButton.MouseButton1Click:Connect(function()
     AnimateGUI(MainFrame, not MainFrame.Visible)
 end)
 
+local DebugPanel = Instance.new("ScrollingFrame")
+DebugPanel.Parent = MainFrame
+DebugPanel.Name = "DebugPanel"
+DebugPanel.Size = UDim2.new(0.9, 0, 0.6, 0)
+DebugPanel.Position = UDim2.new(0.05, 0, 0.3, 0)
+DebugPanel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+DebugPanel.BackgroundTransparency = 0.5
+DebugPanel.BorderSizePixel = 0
+DebugPanel.CanvasSize = UDim2.new(0, 0, 5, 0)
+DebugPanel.ScrollBarThickness = 5
+
+local function LogMessage(message)
+    local DebugText = Instance.new("TextLabel")
+    DebugText.Parent = DebugPanel
+    DebugText.Size = UDim2.new(1, 0, 0, 20)
+    DebugText.BackgroundTransparency = 1
+    DebugText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    DebugText.Font = Enum.Font.Gotham
+    DebugText.TextSize = 14
+    DebugText.Text = message
+end
 
 AddFunctionButton(MainFrame, "Example Button 1", UDim2.new(0.05, 0, 0.1, 0), function()
-    print("Button 1 clicked")
+    LogMessage("Button 1 clicked")
 end)
 
 AddFunctionButton(MainFrame, "Example Button 2", UDim2.new(0.05, 0, 0.2, 0), function()
-    print("Button 2 clicked")
+    LogMessage("Button 2 clicked")
 end)
