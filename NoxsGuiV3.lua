@@ -1,16 +1,23 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Screen GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "NoxGui"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
 
+-- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 400, 0, 340)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -170)
 MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 60)
 MainFrame.BorderSizePixel = 0
 MainFrame.BackgroundTransparency = 0.2
-MainFrame.Parent = ScreenGui
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 15)
@@ -21,20 +28,22 @@ UIStroke.Color = Color3.fromRGB(0, 255, 255)
 UIStroke.Thickness = 3
 UIStroke.Parent = MainFrame
 
+-- Welcome Text
 local WelcomeLabel = Instance.new("TextLabel")
-WelcomeLabel.Size = UDim2.new(0, 200, 0, 50)
-WelcomeLabel.Position = UDim2.new(0, 100, 0, 10)
+WelcomeLabel.Size = UDim2.new(1, 0, 0, 40)
+WelcomeLabel.Position = UDim2.new(0, 0, 0, 0)
 WelcomeLabel.BackgroundTransparency = 1
-WelcomeLabel.Text = "Welcome, " .. game.Players.LocalPlayer.Name
+WelcomeLabel.Text = "Welcome, " .. LocalPlayer.Name
 WelcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 WelcomeLabel.Font = Enum.Font.SourceSansBold
 WelcomeLabel.TextSize = 20
 WelcomeLabel.Parent = MainFrame
 
-local function createButton(text, callback, position)
+-- Button Creator Function
+local function createButton(text, callback, posX, posY)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(0, 180, 0, 40)
-    Button.Position = position
+    Button.Position = UDim2.new(0, posX, 0, posY)
     Button.BackgroundColor3 = Color3.fromRGB(15, 15, 100)
     Button.TextColor3 = Color3.fromRGB(0, 255, 255)
     Button.Text = text
@@ -46,30 +55,46 @@ local function createButton(text, callback, position)
     ButtonUICorner.CornerRadius = UDim.new(0, 10)
     ButtonUICorner.Parent = Button
 
-    Button.MouseButton1Click:Connect(callback)
+    Button.MouseButton1Click:Connect(function()
+        pcall(callback)
+    end)
 end
 
-createButton("Fe scp 096(r6)", function()
-    loadstring(game:HttpGet("https://pastefy.app/M25RnnGm/raw"))()
-end, UDim2.new(0, 10, 0, 60))
+-- Button Layout
+local buttonData = {
+    {"Fe scp 096 (R6)", "https://pastefy.app/M25RnnGm/raw"},
+    {"Grab Knife (Client)", "https://raw.githubusercontent.com/retpirato/Roblox-Scripts/refs/heads/master/Grab%20Knife%20V4.lua"},
+    {"Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {"Self Destruct", nil},
 
-createButton("Grab Knife(client)", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/retpirato/Roblox-Scripts/refs/heads/master/Grab%20Knife%20V4.lua"))()
-end, UDim2.new(0, 10, 0, 110))
+    {"Hat Hub", "https://raw.githubusercontent.com/inkdupe/hat-scripts/refs/heads/main/updatedhathub.lua"},
+    {"Cat Bypasser", "https://raw.githubusercontent.com/shadow62x/catbypass/main/upfix"},
+    {"Genocider", "https://raw.githubusercontent.com/GenesisFE/Genesis/main/Obfuscations/Sadist%20Genocider"},
+    {"Skibidi Hub", "https://raw.githubusercontent.com/aemos2/Skibidihub/refs/heads/main/SkibidiHUB.txt"},
+}
 
-createButton("Inf Yield", function()
-    
-loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))())
-    end)
-end, UDim2.new(0, 10, 0, 160))
+for i, data in ipairs(buttonData) do
+    local name, url = data[1], data[2]
+    local row = (i - 1) % 4
+    local col = math.floor((i - 1) / 4)
+    local x = 10 + (col * 200)
+    local y = 50 + (row * 50)
 
-createButton("Self Destruct", function()
-    ScreenGui:Destroy()
-end, UDim2.new(0, 10, 0, 210))
+    if name == "Self Destruct" then
+        createButton(name, function()
+            ScreenGui:Destroy()
+        end, x, y)
+    else
+        createButton(name, function()
+            loadstring(game:HttpGet(url))()
+        end, x, y)
+    end
+end
 
+-- Toggle Button
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 100, 0, 30)
-ToggleButton.Position = UDim2.new(0, 10, 0, 260)
+ToggleButton.Position = UDim2.new(0, 10, 1, -40)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 100)
 ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 255)
 ToggleButton.Text = "Toggle GUI"
