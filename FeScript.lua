@@ -21,7 +21,7 @@ loopSound:Play()
 
 -- 💬 Roast messages
 local roasts = {
-    "Free ip for me?? How genrous!",
+    "YOU ARE AN IDIOT!",
     "Scripts ain't free 💀",
     "You suck dude XD",
     "Learn to use key systems, clown 🤡",
@@ -74,4 +74,3 @@ while true do
     createRoastWindow()
     task.wait(0.5)
 end
-
