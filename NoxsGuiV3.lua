@@ -1,3 +1,4 @@
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -18,6 +19,7 @@ MainFrame.BackgroundTransparency = 0.2
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
+MainFrame.Visible = false -- Start invisible
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 15)
@@ -57,6 +59,18 @@ local function createButton(text, callback, posX, posY)
 
     Button.MouseButton1Click:Connect(function()
         pcall(callback)
+    end)
+
+    -- Button Hover Animation
+    local originalColor = Button.BackgroundColor3
+    local hoverColor = Color3.fromRGB(30, 30, 150)
+
+    Button.MouseEnter:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = hoverColor}):Play()
+    end)
+
+    Button.MouseLeave:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = originalColor}):Play()
     end)
 end
 
@@ -106,6 +120,28 @@ local ToggleUICorner = Instance.new("UICorner")
 ToggleUICorner.CornerRadius = UDim.new(0, 10)
 ToggleUICorner.Parent = ToggleButton
 
+-- Fade/Slide Toggle Logic
+local isVisible = false
 ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
+    if isVisible then
+        -- Fade out
+        TweenService:Create(MainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+        task.wait(0.5)
+        MainFrame.Visible = false
+    else
+        -- Appear + Animation
+        MainFrame.Visible = true
+        MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200) -- Start a little higher
+        MainFrame.BackgroundTransparency = 1
+
+        local posTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -200, 0.5, -170)})
+        local transparencyTween = TweenService:Create(MainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 0.2})
+
+        posTween:Play()
+        transparencyTween:Play()
+    end
+    isVisible = not isVisible
 end)
+
+-- Auto show GUI on load
+ToggleButton:FireEvent() -- optional if you want it to appear automatically
