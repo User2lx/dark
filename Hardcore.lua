@@ -1,143 +1,86 @@
 local Players = game:GetService("Players")
-local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+local root = char:WaitForChild("HumanoidRootPart")
 
--- Lock UI + Remove respawn/reset
-StarterGui:SetCore("ResetButtonCallback", false)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
-ReplicatedFirst:RemoveDefaultLoadingScreen()
+-- One-time flags
+local hasDied = false
+local introDone = false
 
--- GUI
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "OneLifeUI"
-gui.ResetOnSpawn = false
+-- Freeze and teleport up a little for intro
+root.Anchored = true
+root.CFrame = root.CFrame + Vector3.new(0, 25, 0)
 
--- Intro frame
-local intro = Instance.new("Frame", gui)
-intro.Size = UDim2.new(1, 0, 1, 0)
-intro.BackgroundColor3 = Color3.new(0, 0, 0)
+-- Show intro UI
+local screen = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screen.IgnoreGuiInset = true
+screen.ResetOnSpawn = false
+screen.Name = "HardcoreIntro"
 
-local title = Instance.new("TextLabel", intro)
-title.Size = UDim2.new(1, 0, 0.2, 0)
-title.Position = UDim2.new(0, 0, 0.35, 0)
-title.BackgroundTransparency = 1
-title.Text = "☠ ONE LIFE MODE ☠"
-title.TextColor3 = Color3.new(1, 0, 0)
-title.TextScaled = true
-title.Font = Enum.Font.Arcade
+local label = Instance.new("TextLabel", screen)
+label.Size = UDim2.new(1, 0, 1, 0)
+label.BackgroundTransparency = 1
+label.Text = "HARDCORE MODE ENABLED\nYou only have ONE LIFE."
+label.TextColor3 = Color3.fromRGB(255, 0, 0)
+label.Font = Enum.Font.Arcade
+label.TextScaled = true
 
-local warn = Instance.new("TextLabel", intro)
-warn.Size = UDim2.new(1, 0, 0.2, 0)
-warn.Position = UDim2.new(0, 0, 0.5, 0)
-warn.BackgroundTransparency = 1
-warn.Text = "You only have one life. Death means kick. No respawn."
-warn.TextColor3 = Color3.new(1, 1, 1)
-warn.TextScaled = true
-warn.Font = Enum.Font.GothamBold
+task.wait(4)
 
--- Health label
-local hpLabel = Instance.new("TextLabel", gui)
-hpLabel.Size = UDim2.new(0.3, 0, 0.08, 0)
-hpLabel.Position = UDim2.new(0.35, 0, 0.05, 0)
-hpLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-hpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-hpLabel.TextScaled = true
-hpLabel.Font = Enum.Font.GothamBold
-hpLabel.Text = "Health: 100"
+-- Remove intro
+label:Destroy()
+screen:Destroy()
+root.Anchored = false
+introDone = true
 
--- Overhead tag
-local function tag(character)
-	local head = character:FindFirstChild("Head")
-	if not head then return end
+-- Create "ONE LIFE" billboard
+local billboard = Instance.new("BillboardGui", char)
+billboard.Name = "OneLifeBillboard"
+billboard.Size = UDim2.new(0, 200, 0, 50)
+billboard.StudsOffset = Vector3.new(0, 4, 0)
+billboard.AlwaysOnTop = true
 
-	local tag = Instance.new("BillboardGui", head)
-	tag.Name = "OneLifeTag"
-	tag.Size = UDim2.new(0, 200, 0, 50)
-	tag.StudsOffset = Vector3.new(0, 2.5, 0)
-	tag.AlwaysOnTop = true
+local text = Instance.new("TextLabel", billboard)
+text.Size = UDim2.new(1, 0, 1, 0)
+text.BackgroundTransparency = 1
+text.Text = "☠ ONE LIFE ☠"
+text.TextColor3 = Color3.fromRGB(255, 0, 0)
+text.Font = Enum.Font.GothamBlack
+text.TextScaled = true
 
-	local label = Instance.new("TextLabel", tag)
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text = "☠ ONE LIFE ☠"
-	label.TextColor3 = Color3.new(1, 0, 0)
-	label.TextStrokeTransparency = 0
-	label.TextScaled = true
-	label.Font = Enum.Font.Arcade
-end
+-- Monitor health for red flash if low
+RunService.RenderStepped:Connect(function()
+	if humanoid.Health > 0 and humanoid.Health <= 25 then
+		text.TextColor3 = Color3.fromRGB(255, 50, 50)
+	end
+end)
 
--- Death sequence
-local function deathSequence()
-	local frame = Instance.new("Frame", gui)
-	frame.Size = UDim2.new(1, 0, 1, 0)
-	frame.BackgroundColor3 = Color3.new(0, 0, 0)
-	frame.BackgroundTransparency = 1
-	frame.ZIndex = 1000
+-- On death
+humanoid.Died:Connect(function()
+	if hasDied then return end
+	hasDied = true
 
-	local text = Instance.new("TextLabel", frame)
-	text.Size = UDim2.new(1, 0, 0.2, 0)
-	text.Position = UDim2.new(0, 0, 0.4, 0)
-	text.Text = "YOU DIED"
-	text.Font = Enum.Font.Arcade
-	text.TextScaled = true
-	text.TextColor3 = Color3.new(1, 0, 0)
-	text.BackgroundTransparency = 1
-	text.ZIndex = 1001
+	-- Say one-time message
+	local deathMsg = "I have died. I will now be kicked for losing my one life. This hardcore mode script was made by Nox. This is not an exploit; it is a mod."
+	game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest"):FireServer(deathMsg, "All")
 
-	local sound = Instance.new("Sound", gui)
-	sound.SoundId = "rbxassetid://9117314713"
-	sound.Volume = 1
-	sound:Play()
+	-- Death sound
+	local deathSound = Instance.new("Sound", SoundService)
+	deathSound.SoundId = "rbxassetid://9117314713"
+	deathSound.Volume = 1
+	deathSound:Play()
 
-	TweenService:Create(frame, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
-	TweenService:Create(text, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
+	-- Fade out over time
+	local tween = TweenService:Create(deathSound, TweenInfo.new(5), {Volume = 0})
+	tween:Play()
 
-	task.delay(14, function()
-		for i = 1, 30 do
-			sound.Volume -= 1/30
-			task.wait(0.1)
-		end
-	end)
-
-	task.delay(2, function()
-		local chat = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest")
-		chat:FireServer("I have died. I will now be kicked for losing my one life. This Hardcore Mode script was made by Nox. This is not an exploit, it is a mod.", "All")
-	end)
-
-	task.delay(17, function()
-		player:Kick("You died. You had one life.")
-	end)
-end
-
--- Setup player character
-local function setup(character)
-	local hum = character:WaitForChild("Humanoid")
-	local root = character:WaitForChild("HumanoidRootPart")
-
-	tag(character)
-	local savedPos = root.CFrame
-	root.CFrame = CFrame.new(0, 150, 0)
-	task.wait(0.1)
-	root.Anchored = true
-	hum.Health = hum.MaxHealth
-
-	task.delay(5, function()
-		TweenService:Create(intro, TweenInfo.new(2), {BackgroundTransparency = 1}):Play()
-		task.wait(2)
-		intro:Destroy()
-		root.Anchored = false
-		root.CFrame = savedPos
-	end)
-
-	hum.HealthChanged:Connect(function(hp)
-		hpLabel.Text = "Health: " .. math.floor(hp)
-		hpLabel.BackgroundColor3 = hp <= 25 and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 0, 0)
-	end)
-
-	hum.Died:Connect(deathSequence)
-end
-
-if player.Character then setup(player.Character) end
-player.CharacterAdded:Connect(setup)
+	task.wait(17)
+	player:Kick("You have lost your one life.")
+end)
