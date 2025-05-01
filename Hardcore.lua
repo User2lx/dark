@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
-local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
@@ -16,7 +15,6 @@ gui.ResetOnSpawn = false
 local introFrame = Instance.new("Frame", gui)
 introFrame.Size = UDim2.new(1, 0, 1, 0)
 introFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-introFrame.BorderSizePixel = 0
 
 local introText = Instance.new("TextLabel", introFrame)
 introText.Size = UDim2.new(1, 0, 0.2, 0)
@@ -31,31 +29,31 @@ local warningText = Instance.new("TextLabel", introFrame)
 warningText.Size = UDim2.new(1, 0, 0.2, 0)
 warningText.Position = UDim2.new(0, 0, 0.5, 0)
 warningText.BackgroundTransparency = 1
-warningText.Text = "Die once and you're gone forever."
+warningText.Text = "If you die, you're done. No respawns."
 warningText.TextColor3 = Color3.new(1, 1, 1)
 warningText.TextScaled = true
 warningText.Font = Enum.Font.GothamBold
 
 local hpLabel = Instance.new("TextLabel", gui)
-hpLabel.Size = UDim2.new(0.3, 0, 0.1, 0)
+hpLabel.Size = UDim2.new(0.3, 0, 0.08, 0)
 hpLabel.Position = UDim2.new(0.35, 0, 0.05, 0)
 hpLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 hpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 hpLabel.TextScaled = true
 hpLabel.Font = Enum.Font.GothamBold
 hpLabel.Text = "Health: 100"
-hpLabel.BorderSizePixel = 0
 
-local function addOverhead(char)
-	local head = char:WaitForChild("Head", 5)
+local function addOverheadTag(character)
+	local head = character:FindFirstChild("Head")
 	if not head then return end
-	local billboard = Instance.new("BillboardGui", head)
-	billboard.Name = "OneLifeTag"
-	billboard.Size = UDim2.new(0, 200, 0, 50)
-	billboard.StudsOffset = Vector3.new(0, 2, 0)
-	billboard.AlwaysOnTop = true
 
-	local label = Instance.new("TextLabel", billboard)
+	local tag = Instance.new("BillboardGui", head)
+	tag.Name = "OneLifeOverhead"
+	tag.Size = UDim2.new(0, 200, 0, 50)
+	tag.StudsOffset = Vector3.new(0, 2, 0)
+	tag.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel", tag)
 	label.Size = UDim2.new(1, 0, 1, 0)
 	label.BackgroundTransparency = 1
 	label.Text = "☠ ONE LIFE ☠"
@@ -65,7 +63,7 @@ local function addOverhead(char)
 	label.Font = Enum.Font.Arcade
 end
 
-local function deathScene()
+local function playDeathScene()
 	local frame = Instance.new("Frame", gui)
 	frame.Size = UDim2.new(1, 0, 1, 0)
 	frame.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -82,13 +80,13 @@ local function deathScene()
 	text.BackgroundTransparency = 1
 	text.ZIndex = 1001
 
-	TweenService:Create(frame, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
-	TweenService:Create(text, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
-
 	local sound = Instance.new("Sound", gui)
 	sound.SoundId = "rbxassetid://9117314713"
 	sound.Volume = 1
 	sound:Play()
+
+	TweenService:Create(frame, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
+	TweenService:Create(text, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
 
 	task.delay(14, function()
 		for i = 1, 30 do
@@ -102,26 +100,23 @@ local function deathScene()
 	end)
 end
 
-local function setupChar(char)
-	local hum = char:WaitForChild("Humanoid")
-	local root = char:WaitForChild("HumanoidRootPart")
-	addOverhead(char)
+local function setupCharacter(character)
+	local hum = character:WaitForChild("Humanoid")
+	local root = character:WaitForChild("HumanoidRootPart")
 
-	local savedCFrame = root.CFrame
+	addOverheadTag(character)
+	local originalCFrame = root.CFrame
+	root.CFrame = CFrame.new(0, 150, 0)
+	task.wait(0.1)
 	root.Anchored = true
-	root.CFrame = CFrame.new(0, 9999, 0)
 	hum.Health = hum.MaxHealth
 
-	wait(5)
-	TweenService:Create(introFrame, TweenInfo.new(2), {BackgroundTransparency = 1}):Play()
-	wait(2)
-	introFrame:Destroy()
-
-	root.Anchored = false
-	root.CFrame = savedCFrame
-
-	hum.Died:Connect(function()
-		deathScene()
+	task.delay(5, function()
+		TweenService:Create(introFrame, TweenInfo.new(2), {BackgroundTransparency = 1}):Play()
+		task.wait(2)
+		introFrame:Destroy()
+		root.Anchored = false
+		root.CFrame = originalCFrame
 	end)
 
 	hum.HealthChanged:Connect(function(hp)
@@ -132,9 +127,13 @@ local function setupChar(char)
 			hpLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 		end
 	end)
+
+	hum.Died:Connect(function()
+		playDeathScene()
+	end)
 end
 
 if player.Character then
-	setupChar(player.Character)
+	setupCharacter(player.Character)
 end
-player.CharacterAdded:Connect(setupChar)
+player.CharacterAdded:Connect(setupCharacter)
